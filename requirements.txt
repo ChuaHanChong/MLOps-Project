@@ -20,3 +20,6 @@ scikit-learn
 pycodestyle
 pydocstyle
 black
+
+# Test
+pytest
