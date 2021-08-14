@@ -15,6 +15,12 @@ $(VENV_NAME)/bin/activate: requirements.txt requirements-tf.txt
 	$(PYTHON) -m pip install -e .
 	touch $(VENV_NAME)/bin/activate
 
+##########
+# TASKS
+##########
+.PHONY: train-task1
+train-task1: env
+	$(PYTHON) -m pipeline.tasks.classification.train --config $(config)
 
 ######
 # MISC
