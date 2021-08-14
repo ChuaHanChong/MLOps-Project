@@ -14,3 +14,14 @@ $(VENV_NAME)/bin/activate: requirements.txt requirements-tf.txt
 	$(PYTHON) -m pip install -r requirements-tf.txt
 	$(PYTHON) -m pip install -e .
 	touch $(VENV_NAME)/bin/activate
+
+
+######
+# MISC
+######
+.PHONY: test
+test: env
+	$(VENV_ACTIVATE) && \
+	pytest \
+		tests \
+		--durations=0
