@@ -1,0 +1,22 @@
+# Utilities
+setuptools
+wheel
+tqdm
+icecream
+pyyaml
+python-snappy
+
+# Data science libraries
+numpy
+scipy
+pandas
+matplotlib
+seaborn
+
+# Machine learning libraries
+scikit-learn
+
+# Linting & formatting
+pycodestyle
+pydocstyle
+black
