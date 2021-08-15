@@ -1,6 +1,6 @@
 name: Feature request
 description: Suggest an idea for this project!
-title: "[Bug]: <title>"
+title: "[Feature]: <title>"
 labels: [bug, triage]
 body:
   - type: markdown
