@@ -1,1 +1,2 @@
-__version__ = "0.1.0"
+"""ml module's version."""
+__version__ = '0.1.0'
