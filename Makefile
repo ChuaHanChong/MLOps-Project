@@ -12,6 +12,8 @@ $(VENV_NAME)/bin/activate: requirements.txt
 	$(PYTHON) -m pip install -U pip
 	$(PYTHON) -m pip install -r requirements.txt
 	$(PYTHON) -m pip install -e .
+	$(PYTHON) -m pip install pre-commit
+	source $(VENV_NAME)/bin/activate && pre-commit install && deactivate
 	touch $(VENV_NAME)/bin/activate
 
 
