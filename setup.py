@@ -1,12 +1,15 @@
-from setuptools import setup, find_packages
 import pathlib
+from typing import Dict
+
+from setuptools import find_packages
+from setuptools import setup
 
 here = pathlib.Path(__file__).parent.resolve()
 
 long_description = (here / 'README.md').read_text(encoding='utf-8')
 
-version = {}
-with open("src/ml/version.py") as fp:
+version: Dict[str, float] = {}
+with open('src/ml/version.py') as fp:
     exec(fp.read(), version)
 
 setup(
