@@ -13,6 +13,8 @@ $(VENV_NAME)/bin/activate: requirements.txt requirements-tf.txt
 	$(PYTHON) -m pip install -r requirements.txt
 	$(PYTHON) -m pip install -r requirements-tf.txt
 	$(PYTHON) -m pip install -e .
+	$(PYTHON) -m pip install pre-commit
+	source $(VENV_NAME)/bin/activate && pre-commit install && deactivate
 	touch $(VENV_NAME)/bin/activate
 
 
