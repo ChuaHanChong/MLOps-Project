@@ -20,8 +20,8 @@ $(VENV_NAME)/bin/activate: requirements.txt requirements-tf.txt
 ##########
 # TASKS
 ##########
-.PHONY: train-task1
-train-task1: env
+.PHONY: train-classification
+train-classification: env
 	$(PYTHON) -m pipeline.tasks.classification.train --config $(config)
 
 ######
