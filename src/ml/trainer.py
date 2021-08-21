@@ -511,7 +511,8 @@ class TrainWorker:
 
 # TFX Trainer will call this function.
 def run_fn(fn_args: tfx.components.FnArgs):
-    """Train the model based on given args.
+    """
+    Train the model based on given args.
 
     Parameters
     ----------
