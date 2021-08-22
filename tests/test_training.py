@@ -82,7 +82,7 @@ class TestLR(tf.test.TestCase):
         for i in range(num_epochs * steps_per_epoch):
             if i != 0 and (i / steps_per_epoch) % 5 == 0:
                 # cut initial lr into half after every 5 epochs
-                learning_rate.lr_scheduler.initial_learning_rate *= 0.5
+                learning_rate.scheduler.initial_learning_rate *= 0.5
             lrs.append(learning_rate(i).numpy())
         ic(lrs)
 
