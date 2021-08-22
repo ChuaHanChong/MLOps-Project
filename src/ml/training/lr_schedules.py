@@ -5,9 +5,7 @@ import tensorflow as tf
 from typeguard import typechecked
 
 
-class WarmupCosineDecayRestarts(
-    tf.keras.optimizers.schedules.LearningRateSchedule,
-):
+class WarmupCosineDecayRestarts(tf.keras.optimizers.schedules.LearningRateSchedule):
     """A cosine decay schedule with restarts and warmup."""
 
     @typechecked
@@ -31,20 +29,18 @@ class WarmupCosineDecayRestarts(
         first_decay_steps : int
             Number of steps to decay over.
         t_mul : float, optional
-            Use to derive the number of iterations in the i-th period,
-            by default 2.0.
+            Use to derive the number of iterations in the i-th period, by default `2.0`.
         m_mul : float, optional
-            Use to derive the initial learning rate of the i-th period,
-            by default 1.0.
+            Use to derive the initial learning rate of the i-th period, by default `1.0`.
         alpha : float, optional
-            Minimum learning rate value as a fraction of
-            the initial_learning_rate, by default 0.0.
+            Minimum learning rate value as a fraction of the initial_learning_rate,
+            by default `0.0`.
         steps_per_epoch : int, optional
-            Number of steps per epoch, by default None.
+            Number of steps per epoch, by default `None`.
         warmup_epochs : int, optional
-            Number of warmup epoch, by default 0.
+            Number of warmup epoch, by default `0`.
         name : str, optional
-            Name of the schedule, by default None.
+            Name of the schedule, by default `None`.
         """
         super().__init__()
         self.scheduler = tf.keras.experimental.CosineDecayRestarts(

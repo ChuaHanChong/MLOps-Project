@@ -18,7 +18,7 @@ class LearningRateLogger(tf.keras.callbacks.Callback):
         Parameters
         ----------
         steps_per_epoch : int, optional
-            Number of steps per epoch, by default None.
+            Number of steps per epoch, by default `None`.
         """
         super().__init__()
         if steps_per_epoch is None:
@@ -65,36 +65,35 @@ class EarlyStopping(tf.keras.callbacks.EarlyStopping):
         Parameters
         ----------
         monitor : str, optional
-            Quantity to be monitored, by default 'val_loss'.
+            Quantity to be monitored, by default `'val_loss'`.
         min_delta : int, optional
-            Minimum change in the monitored quantity to qualify
-            as an improvement, i.e. an absolute change of less
-            than min_delta, will count as no improvement,
-            by default 0.
+            Minimum change in the monitored quantity to qualify as an improvement,
+            i.e. an absolute change of less than min_delta, will count as no improvement,
+            by default `0`.
         patience : int, optional
-            Number of epochs with no improvement after which
-            training will be stopped, by default 0.
+            Number of epochs with no improvement after which training will be stopped,
+            by default `0`.
         verbose : int, optional
-            0: quiet, 1: update messages, by default 0.
+            0: quiet, 1: update messages, by default `0`.
         mode : str, optional
-            One of {'auto', 'min', 'max'}, by default 'auto'.
-            In 'min' mode, the learning rate will be reduced when the
-            quantity monitored has stopped decreasing;
-            in 'max' mode it will be reduced when the quantity monitored has
+            One of `{'auto', 'min', 'max'}`, by default `'auto'`.
+            In `'min'` mode, the learning rate will be reduced when the quantity
+            monitored has stopped decreasing;
+            in `'max'` mode it will be reduced when the quantity monitored has
             stopped increasing;
-            in 'auto' mode, the direction is automatically inferred from the
-            name of the monitored quantity.
+            in `'auto'` mode, the direction is automatically inferred from the name of
+            then monitored quantity.
         baseline : int, optional
             Baseline value for the monitored quantity.
-            Training will stop if the model doesn't show improvement over the
-            baseline, by default None.
+            Training will stop if the model doesn't show improvement over the baseline,
+            by default `None`.
         target : int, optional
             Target value for the monitored quantity.
             Training will stop if the model reach the target value,
-            by default None.
+            by default `None`.
         restore_best_weights : bool, optional
-            Whether to restore model weights from the epoch with the best
-            value of the monitored quantity, by default False.
+            Whether to restore model weights from the epoch with the best value of the
+            monitored quantity, by default `False`.
         """
         super().__init__(
             monitor=monitor,
@@ -153,32 +152,32 @@ class ReduceLROnPlateau(tf.keras.callbacks.ReduceLROnPlateau):
         Parameters
         ----------
         monitor : str, optional
-            Quantity to be monitored, by default 'val_loss'.
+            Quantity to be monitored, by default `'val_loss'`.
         factor : float, optional
-            Factor by which the learning rate will be reduced, by default 0.1.
+            Factor by which the learning rate will be reduced, by default `0.1`.
         patience : int, optional
-            number of epochs with no improvement after which learning rate
-            will be reduced, by default 10.
+            Number of epochs with no improvement after which learning rate will be
+            reduced, by default `10`.
         verbose : int, optional
-            0: quiet, 1: update messages, by default 0.
+            0: quiet, 1: update messages, by default `0`.
         mode : str, optional
-            One of {'auto', 'min', 'max'}, by default 'auto'.
-            In 'min' mode, the learning rate will be reduced when the
-            quantity monitored has stopped decreasing;
-            in 'max' mode it will be reduced when the quantity monitored has
+            One of `{'auto', 'min', 'max'}`, by default `'auto'`.
+            In `'min'` mode, the learning rate will be reduced when the quantity
+            monitored has stopped decreasing;
+            in `'max'` mode it will be reduced when the quantity monitored has
             stopped increasing;
-            in 'auto' mode, the direction is automatically inferred from the
-            name of the monitored quantity.
+            in `'auto'` mode, the direction is automatically inferred from the name of
+            then monitored quantity.
         min_delta : float, optional
-            Threshold for measuring the new optimum, to only focus on
-            significant changes, by default 0.0001.
+            Threshold for measuring the new optimum, to only focus on significant
+            changes, by default `0.0001`.
         cooldown : int, optional
-            Number of epochs to wait before resuming normal operation after
-            lr has been reduced, by default 0.
+            Number of epochs to wait before resuming normal operation after lr has been
+            reduced, by default `0`.
         min_lr : int, optional
-            Lower bound on the learning rate, by default 0.
+            Lower bound on the learning rate, by default `0`.
         steps_per_epoch : int, optional
-            Number of steps per epoch, by default None.
+            Number of steps per epoch, by default `None`.
         """
         super().__init__(
             monitor=monitor,
@@ -254,8 +253,7 @@ class ReduceLROnPlateau(tf.keras.callbacks.ReduceLROnPlateau):
 class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
     """Customized AverageModelCheckpoint.
 
-    It saves average model weights and,
-    optionally, assigns the averaged weights.
+    It saves average model weights and, optionally, assigns the averaged weights.
     """
 
     @typechecked
@@ -276,26 +274,26 @@ class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
         Parameters
         ----------
         update_weights : bool
-            If `True`, assign the moving average weights to the model, and save
-            them. If False, keep the old non-averaged weights, but the saved
-            model uses the average weights.
+            If `True`, assign the moving average weights to the model, and save them.
+            If `False`, keep the old non-averaged weights, but the saved model uses the
+            average weights.
         filepath : str
             Path to save the model file.
         monitor : str, optional
-            The metric name to monitor, by default 'val_loss'.
+            The metric name to monitor, by default `'val_loss'`.
         verbose : int, optional
-            0: quiet, 1: update messages, by default 0.
+            0: quiet, 1: update messages, by default `0`.
         save_best_only : bool, optional
-             Save when the model is considered the "best" and the latest best
-             model according to the quantity monitored will not be overwritten,
-             by default False.
+             Save when the model is considered the best and the latest best model
+             according to the quantity monitored will not be overwritten,
+             by default `False`.
         save_weights_only : bool, optional
-            If True, then only the model's weights will be saved,
-            else the full model is saved, by default False.
+            If `True`, then only the model's weights will be saved, else the full model
+            is saved, by default `False`.
         mode : str, optional
-            One of {'auto', 'min', 'max'}, by default 'auto'.
+            One of `{'auto', 'min', 'max'}`, by default `'auto'`.
         save_freq : str, optional
-            Checkpoint saving frequency, by default 'epoch'.
+            Checkpoint saving frequency, by default `'epoch'`.
         """
         self.update_weights = update_weights
         super().__init__(
@@ -327,8 +325,8 @@ class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
             tfa.optimizers.average_wrapper.AveragedOptimizerWrapper,
         ):
             raise TypeError(
-                'AverageModelCheckpoint is only used when training'
-                'with MovingAverage or StochasticAverage',
+                'AverageModelCheckpoint is only used when training with '
+                'MovingAverage or StochasticAverage',
             )
 
     def _save_model(self, epoch, logs):

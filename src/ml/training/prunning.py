@@ -14,7 +14,7 @@ def apply_pruning_to_layer(
         TF Keras layers.
     prunable_layer_types : list, optional
         List of prunable Keras layers name,
-        by default ["Conv2D", "Dense", "DepthwiseConv2D"].
+        by default `['Conv2D', 'Dense', 'DepthwiseConv2D']`.
 
     Returns
     -------
