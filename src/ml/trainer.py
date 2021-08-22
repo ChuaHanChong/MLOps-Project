@@ -61,7 +61,7 @@ class TrainWorker:
         config : dict
             Model training configuration.
         name : str, optional
-            Name of the training model, by default None.
+            Name of the training model, by default `None`.
         """
         self.fn_args = fn_args
         self.name = name
@@ -100,8 +100,7 @@ class TrainWorker:
             tf_transform_output.transformed_metadata.schema,
         )
         # Apply data augmentation. We have to do data augmentation here
-        # because we need to apply data agumentation on-the-fly during
-        # training.
+        # because we need to apply data agumentation on-the-fly during training.
         # If we put it in Transform, it will only be applied once on the whole
         # dataset, which will lose the point of data augmentation.
         augment_image = AugmentImage(
@@ -261,8 +260,7 @@ class TrainWorker:
     ):
         """Configure model for training.
 
-        Configure model weight and trainable layers, prune model,
-        and compile model.
+        Configure model weight and trainable layers, prune model, and compile model.
         """
         optimizer = self._setup_optimizer(steps_per_epoch, lr=lr)
 

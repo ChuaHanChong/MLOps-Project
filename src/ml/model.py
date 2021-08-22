@@ -1,7 +1,10 @@
 """Module for model building."""
+from typing import Optional
+
 import tensorflow as tf
 from ml.utils import IMAGE_KEY
 from ml.utils import transformed_name
+from typeguard import typechecked
 
 
 keras_applications = {
@@ -49,13 +52,14 @@ default_trainable_expr = {
 }
 
 
+@typechecked
 def build_model(
-    model_name,
-    num_classes,
-    pretrained_weight=None,
-    trainable=False,
-    output_activation=None,
-    name=None,
+    model_name: str,
+    num_classes: int,
+    pretrained_weight: Optional[str] = None,
+    trainable: bool = False,
+    output_activation: Optional[str] = None,
+    name: Optional[str] = None,
 ):
     """Build model with TF keras applications.
 
@@ -68,11 +72,11 @@ def build_model(
     num_classes : int
         Number of output classes.
     pretrained_weight : str, optional
-        Path of pretrained .h5 keras model weight, by default None.
+        Path of pretrained .h5 keras model weight, by default `None`.
     trainable : bool, optional
-        A controlling whether the TF hub model is trainable, by default False.
+        A controlling whether the TF hub model is trainable, by default `False`.
     name : str, optional
-        Name of the model, by default None.
+        Name of the model, by default `None`.
 
     Returns
     -------
