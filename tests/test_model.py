@@ -24,21 +24,15 @@ class TestModelWeight(tf.test.TestCase):
             model1 = build_model(model_name, num_classes)
             for layer in model1.layers:
                 if re.match(var_trainable_expr, layer.name):
-                    if not isinstance(
-                        layer,
-                        tf.keras.layers.BatchNormalization,
-                    ):
+                    if not isinstance(layer, tf.keras.layers.BatchNormalization):
                         layer.trainable = True
 
             total_params_model1 = count_params(model1.weights)
             trainable_params_model1 = count_params(model1.trainable_weights)
-            nontrainable_params_model1 = count_params(
-                model1.non_trainable_weights,
-            )
-
+            xtrainable_params_model1 = count_params(model1.non_trainable_weights)
             ic(total_params_model1)
             ic(trainable_params_model1)
-            ic(nontrainable_params_model1)
+            ic(xtrainable_params_model1)
 
             # without re
             model2 = build_model(model_name, num_classes)
@@ -48,20 +42,15 @@ class TestModelWeight(tf.test.TestCase):
 
             total_params_model2 = count_params(model2.weights)
             trainable_params_model2 = count_params(model2.trainable_weights)
-            nontrainable_params_model2 = count_params(
-                model2.non_trainable_weights,
-            )
+            xtrainable_params_model2 = count_params(model2.non_trainable_weights)
 
             ic(total_params_model2)
             ic(trainable_params_model2)
-            ic(nontrainable_params_model2)
+            ic(xtrainable_params_model2)
 
             self.assertEqual(total_params_model1, total_params_model2)
             self.assertEqual(trainable_params_model1, trainable_params_model2)
-            self.assertEqual(
-                nontrainable_params_model1,
-                nontrainable_params_model2,
-            )
+            self.assertEqual(xtrainable_params_model1, xtrainable_params_model2)
 
             del model1
             del model2
