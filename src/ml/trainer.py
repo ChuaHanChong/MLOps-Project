@@ -101,8 +101,8 @@ class TrainWorker:
         )
         # Apply data augmentation. We have to do data augmentation here
         # because we need to apply data agumentation on-the-fly during training.
-        # If we put it in Transform, it will only be applied once on the whole
-        # dataset, which will lose the point of data augmentation.
+        # If we put it in Transform, it will only be applied once on the whole dataset,
+        # which will lose the point of data augmentation.
         augment_image = AugmentImage(
             augname='randaug',
             ra_num_layers=1,
@@ -144,9 +144,7 @@ class TrainWorker:
             callbacks = [lr_logger, tb_callback]
 
         avg_ckpt_callback = AverageModelCheckpoint(
-            filepath=str(
-                output_dir.joinpath('checkpoint', 'emackpt-{epoch:d}'),
-            ),
+            filepath=str(output_dir.joinpath('checkpoint', 'emackpt-{epoch:d}')),
             monitor=self.fn_args.custom_config['monitor'].get(
                 'metric',
                 MONITOR['METRIC'],
@@ -155,10 +153,7 @@ class TrainWorker:
             save_best_only=True,
             save_weights_only=True,
             update_weights=True,
-            mode=self.fn_args.custom_config['monitor'].get(
-                'mode',
-                MONITOR['MODE'],
-            ),
+            mode=self.fn_args.custom_config['monitor'].get('mode', MONITOR['MODE']),
         )
         es_callback = EarlyStopping(
             monitor=self.fn_args.custom_config['monitor'].get(
@@ -174,10 +169,7 @@ class TrainWorker:
                 LEARNING_RATE['EPOCHS_PER_RESTART'],
             ),
             verbose=verbose,
-            mode=self.fn_args.custom_config['monitor'].get(
-                'mode',
-                MONITOR['MODE'],
-            ),
+            mode=self.fn_args.custom_config['monitor'].get('mode', MONITOR['MODE']),
             target=self.fn_args.custom_config['monitor'].get(
                 'target',
                 MONITOR['TARGET'],
@@ -199,10 +191,7 @@ class TrainWorker:
                 * rlrop_factor,
             ),
             verbose=verbose,
-            mode=self.fn_args.custom_config['monitor'].get(
-                'mode',
-                MONITOR['MODE'],
-            ),
+            mode=self.fn_args.custom_config['monitor'].get('mode', MONITOR['MODE']),
             min_delta=self.fn_args.custom_config['monitor'].get(
                 'min_delta',
                 MONITOR['MIN_DELTA'],
@@ -267,10 +256,7 @@ class TrainWorker:
         if var_trainable_expr:
             for layer in model.layers:
                 if re.match(var_trainable_expr, layer.name):
-                    if not isinstance(
-                        layer,
-                        tf.keras.layers.BatchNormalization,
-                    ):
+                    if not isinstance(layer, tf.keras.layers.BatchNormalization):
                         layer.trainable = True
 
         if ckpt_dir:
@@ -379,10 +365,7 @@ class TrainWorker:
             loss,
             metrics,
             steps_per_epoch,
-            lr=self.fn_args.custom_config['learning_rate'].get(
-                'base_lr',
-                None,
-            ),
+            lr=self.fn_args.custom_config['learning_rate'].get('base_lr', None),
             var_trainable_expr=var_trainable_expr,
             ckpt_dir=ckpt_dir,
             prune_model=prune_model,
@@ -401,9 +384,7 @@ class TrainWorker:
             validation_data=val_dataset,
             validation_steps=validation_steps,
         )
-        best_ckpt_path = tf.train.latest_checkpoint(
-            str(output_dir / 'checkpoint'),
-        )
+        best_ckpt_path = tf.train.latest_checkpoint(str(output_dir / 'checkpoint'))
         model.load_weights(best_ckpt_path)
 
         if save_model:
