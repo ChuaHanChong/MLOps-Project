@@ -22,8 +22,9 @@ _MAX_LEVEL = 10.0
 def policy_v0():
     """Autoaugment policy that was used in AutoAugment Paper."""
     # Each tuple is an augmentation operation of the form
-    # (operation, probability, magnitude). Each element in policy is a
-    # sub-policy that will be applied sequentially on the image.
+    # (operation, probability, magnitude).
+    # Each element in policy is a sub-policy that will be applied sequentially
+    # on the image.
     policy = [
         [('Equalize', 0.8, 1), ('ShearY', 0.8, 4)],
         [('Color', 0.4, 9), ('Equalize', 0.6, 3)],
@@ -57,8 +58,9 @@ def policy_v0():
 def policy_vtest():
     """Autoaugment test policy for debugging."""
     # Each tuple is an augmentation operation of the form
-    # (operation, probability, magnitude). Each element in policy is a
-    # sub-policy that will be applied sequentially on the image.
+    # (operation, probability, magnitude).
+    # Each element in policy is a sub-policy that will be applied sequentially
+    # on the image.
     policy = [
         [('TranslateX', 1.0, 4), ('Equalize', 1.0, 10)],
     ]
@@ -67,28 +69,27 @@ def policy_vtest():
 
 def blend(image1, image2, factor):
     """
-    Blend image1 and image2 using 'factor'.
+    Blend `image1` and `image2` using `factor`.
 
-    Factor can be above 0.0.  A value of 0.0 means only image1 is used.
-    A value of 1.0 means only image2 is used.  A value between 0.0 and
-    1.0 means we linearly interpolate the pixel values between the two
-    images.  A value greater than 1.0 "extrapolates" the difference
-    between the two pixel values, and we clip the results to values
-    between 0 and 255 .
+    Factor can be above `0.0`. A value of `0.0` means only image1 is used.
+    A value of `1.0` means only image2 is used. A value between `0.0` and `1.0`
+    means we linearly interpolate the pixel values between the two images.
+    A value greater than `1.0`, it extrapolates the difference between the
+    two pixel values, and we clip the results to values between `0` and `255`.
 
     Parameters
     ----------
     image1 : tf.Tensor
-        An image Tensor of type uint8 .
+        An image Tensor of type `uint8`.
     image2 : tf.Tensor
-        An image Tensor of type uint8 .
+        An image Tensor of type `uint8`.
     factor : float
-        A floating point value above 0.0 .
+        A floating point value above `0.0`.
 
     Returns
     -------
     tf.Tensor
-        A blended image Tensor of type uint8 .
+        A blended image Tensor of type `uint8`.
     """
     if factor == 0.0:
         return tf.convert_to_tensor(image1)
@@ -110,7 +111,6 @@ def blend(image1, image2, factor):
         return tf.cast(temp, tf.uint8)
 
     # Extrapolate:
-    #
     # We need to clip and then cast.
     return tf.cast(tf.clip_by_value(temp, 0.0, 255.0), tf.uint8)
 
@@ -119,33 +119,32 @@ def cutout(image, pad_size, replace=0):
     """
     Apply cut-out (https://arxiv.org/abs/1708.04552) to image.
 
-    This operation applies a (2*pad_size x 2*pad_size) mask of zeros to
-    a random location within `img`. The pixel values filled in will be of the
-    value `replace`. The located where the mask will be applied is randomly
-    chosen uniformly over the whole image.
+    This operation applies a (2*pad_size x 2*pad_size) mask of zeros to a random
+    location within image.
+    The pixel values filled in will be of the value of replace.
+    The located where the mask will be applied is randomly chosen uniformly over the
+    whole image.
 
     Parameters
     ----------
     image : tf.Tensor
-         An image Tensor of type uint8 .
+         An image Tensor of type `uint8`.
     pad_size : int
-        Specifies how big the zero mask that will be generated is
-        that is applied to the image. The mask will be of size
-        (2*pad_size x 2*pad_size).
+        Specifies how big the zero mask that will be generated is that is applied to
+        the image. The mask will be of size (2*pad_size x 2*pad_size).
     replace : int, optional
-        What pixel value to fill in the image in the area that has
-        the cutout mask applied to it, by default 0 .
+        What pixel value to fill in the image in the area that has the cutout mask
+        applied to it, by default `0`.
 
     Returns
     -------
     tf.Tensor
-        An image Tensor that is of type uint8 .
+        An image Tensor that is of type `uint8`.
     """
     image_height = tf.shape(image)[0]
     image_width = tf.shape(image)[1]
 
-    # Sample the center location in the image
-    # where the zero mask will be applied.
+    # Sample the center location in the image where the zero mask will be applied.
     cutout_center_height = tf.random.uniform(
         shape=[],
         minval=0,
@@ -187,18 +186,17 @@ def cutout(image, pad_size, replace=0):
 
 def solarize(image, threshold=128):
     """Solarize image."""
-    # For each pixel in the image, select the pixel
-    # if the value is less than the threshold.
+    # For each pixel in the image, select the pixel if the value is less than the
+    # threshold.
     # Otherwise, subtract 255 from the pixel.
     return tf.where(image < threshold, image, 255 - image)
 
 
 def solarize_add(image, addition=0, threshold=128):
     """Add solarized image."""
-    # For each pixel in the image less than threshold
-    # we add 'addition' amount to it and then clip the
-    # pixel value to be between 0 and 255. The value
-    # of 'addition' is between -128 and 128.
+    # For each pixel in the image less than threshold we add 'addition' amount to
+    # it and then clip the pixel value to be between 0 and 255.
+    # The value of 'addition' is between -128 and 128.
     added_image = tf.cast(image, tf.int64) + addition
     added_image = tf.cast(tf.clip_by_value(added_image, 0, 255), tf.uint8)
     return tf.where(image < threshold, added_image, image)
@@ -217,8 +215,8 @@ def contrast(image, factor):
     degenerate = tf.cast(degenerate, tf.int32)
 
     # Compute the grayscale histogram, then compute the mean pixel value,
-    # and create a constant image size of that value.  Use that as the
-    # blending degenerate target of the original image.
+    # and create a constant image size of that value.
+    # Use that as the blending degenerate target of the original image.
     hist = tf.histogram_fixed_width(degenerate, [0, 255], nbins=256)
     mean = tf.reduce_sum(tf.cast(hist, tf.float32)) / 256.0
     degenerate = tf.ones_like(degenerate, dtype=tf.float32) * mean
@@ -246,14 +244,14 @@ def rotate(image, degrees, replace):
     Parameters
     ----------
     image : tf.Tensor
-        An image Tensor of type uint8 .
+        An image Tensor of type `uint8`.
     degrees : float
-        A scalar angle in degrees to rotate all images by. If
-        degrees is positive the image will be rotated clockwise otherwise
+        A scalar angle in degrees to rotate all images by.
+        If degrees is positive the image will be rotated clockwise otherwise
         it will be rotated counterclockwise
     replace : tf,Tensor
-        A one or three value 1D tensor to fill empty pixels caused by
-        the rotate operation.
+        A one or three value 1D tensor to fill empty pixels caused by the rotate
+        operation.
 
     Returns
     -------
@@ -264,9 +262,8 @@ def rotate(image, degrees, replace):
     degrees_to_radians = math.pi / 180.0
     radians = degrees * degrees_to_radians
 
-    # In practice, we should randomize the rotation degrees by flipping
-    # it negatively half the time, but that's done on 'degrees' outside
-    # of the function.
+    # In practice, we should randomize the rotation degrees by flipping it negatively
+    # half the time, but that's done on 'degrees' outside of the function.
     image = image_ops.rotate(wrap(image), radians)
     return unwrap(image, replace)
 
@@ -285,8 +282,7 @@ def translate_y(image, pixels, replace):
 
 def shear_x(image, level, replace):
     """Equivalent of PIL Shearing in X dimension."""
-    # Shear parallel to x axis is a projective transform
-    # with a matrix form of:
+    # Shear parallel to x axis is a projective transform with a matrix form of:
     # [1  level
     #  0  1].
     image = image_ops.transform(
@@ -298,8 +294,7 @@ def shear_x(image, level, replace):
 
 def shear_y(image, level, replace):
     """Equivalent of PIL Shearing in Y dimension."""
-    # Shear parallel to y axis is a projective transform
-    # with a matrix form of:
+    # Shear parallel to y axis is a projective transform with a matrix form of:
     # [1  0
     #  level  1].
     image = image_ops.transform(
@@ -316,20 +311,19 @@ def autocontrast(image):
     Parameters
     ----------
     image : tf.Tensor
-        A 3D uint8 tensor.
+        A 3D `uint8` tensor.
 
     Returns
     -------
     tf.Tensor
         The image after it has had autocontrast applied to it and will be of
-        type uint8 .
+        type `uint8`.
     """
 
     def scale_channel(image):
         """Scale the 2D image using the autocontrast rule."""
-        # A possibly cheaper version can be done using
-        # cumsum/unique_with_counts over the histogram values,
-        # rather than iterating over the entire image.
+        # A possibly cheaper version can be done using cumsum/unique_with_counts over
+        # the histogram values, rather than iterating over the entire image.
         # to compute mins and maxes.
         lo = tf.cast(tf.reduce_min(image), dtype=tf.float32)
         hi = tf.cast(tf.reduce_max(image), dtype=tf.float32)
@@ -345,8 +339,7 @@ def autocontrast(image):
         result = tf.cond(hi > lo, lambda: scale_values(image), lambda: image)
         return result
 
-    # Assumes RGB for now.  Scales each channel independently
-    # and then stacks the result.
+    # Assumes RGB for now. Scales each channel independently and then stacks the result.
     s1 = scale_channel(image[:, :, 0])
     s2 = scale_channel(image[:, :, 1])
     s3 = scale_channel(image[:, :, 2])
@@ -373,8 +366,8 @@ def sharpness(image, factor):
     kernel = tf.tile(kernel, [1, 1, 3, 1])
     strides = [1, 1, 1, 1]
     with tf.device('/cpu:0'):
-        # Some augmentation that uses depth-wise conv will cause crashing when
-        # training on GPU. See (b/156242594) for details.
+        # Some augmentation that uses depth-wise conv will cause crashing when training
+        # on GPU. See (b/156242594) for details.
         degenerate = tf.nn.depthwise_conv2d(
             image,
             kernel,
@@ -385,8 +378,7 @@ def sharpness(image, factor):
     degenerate = tf.clip_by_value(degenerate, 0.0, 255.0)
     degenerate = tf.squeeze(tf.cast(degenerate, tf.uint8), [0])
 
-    # For the borders of the resulting image, fill in the values of the
-    # original image.
+    # For the borders of the resulting image, fill in the values of the original image.
     mask = tf.ones_like(degenerate)
     padded_mask = tf.pad(mask, [[1, 1], [1, 1], [0, 0]])
     padded_degenerate = tf.pad(degenerate, [[1, 1], [1, 1], [0, 0]])
@@ -420,8 +412,8 @@ def equalize(image):
             # in the C code for image.point.
             return tf.clip_by_value(lut, 0, 255)
 
-        # If step is zero, return the original image.  Otherwise, build
-        # lut from the full histogram and step and then index from it.
+        # If step is zero, return the original image. Otherwise, build lut from the full
+        # histogram and step and then index from it.
         result = tf.cond(
             tf.equal(step, 0),
             lambda: im,
@@ -430,8 +422,7 @@ def equalize(image):
 
         return tf.cast(result, tf.uint8)
 
-    # Assumes RGB for now.  Scales each channel independently
-    # and then stacks the result.
+    # Assumes RGB for now. Scales each channel independently and then stacks the result.
     s1 = scale_channel(image, 0)
     s2 = scale_channel(image, 1)
     s3 = scale_channel(image, 2)
@@ -458,11 +449,11 @@ def unwrap(image, replace):
     Unwrap an image produced by wrap.
 
     Where there is a 0 in the last channel for every spatial position,
-    the rest of the three channels in that spatial dimension are grayed
-    (set to 128).  Operations like translate and shear on a wrapped
-    Tensor will leave 0s in empty locations.  Some transformations look
-    at the intensity of values to do preprocessing, and we want these
-    empty pixels to assume the 'average' value, rather than pure black.
+    the rest of the three channels in that spatial dimension are grayed (set to 128).
+    Operations like translate and shear on a wrapped Tensor will leave 0s in empty
+    locations.
+    Some transformations look at the intensity of values to do preprocessing,
+    and we want these empty pixels to assume the average value, rather than pure black.
 
     Parameters
     ----------
@@ -599,8 +590,7 @@ def _parse_policy_info(name, prob, level, replace_value, augmentation_hparams):
     if 'prob' in inspect.getfullargspec(func)[0]:
         args = tuple([prob] + list(args))
 
-    # Add in replace arg if it is required
-    # for the function that is being called.
+    # Add in replace arg if it is required for the function that is being called.
     if 'replace' in inspect.getfullargspec(func)[0]:
         # Make sure replace is the final argument
         # assert 'replace' == inspect.getargspec(func)[0][-1]
@@ -614,8 +604,8 @@ def _apply_func_with_prob(func, image, args, prob):
     """Apply `func` to image w/ `args` as input with probability `prob`."""
     assert isinstance(args, tuple)
 
-    # If prob is a function argument, then this randomness is being handled
-    # inside the function, so make sure it is always called.
+    # If prob is a function argument, then this randomness is being handled inside the
+    # function, so make sure it is always called.
     if 'prob' in inspect.getfullargspec(func)[0]:
         prob = 1.0
 
@@ -639,8 +629,8 @@ def select_and_apply_random_policy(policies, image):
         maxval=len(policies),
         dtype=tf.int32,
     )
-    # Note that using tf.case instead of tf.conds would result in significantly
-    # larger graphs and would even break export for some larger policies.
+    # Note that using tf.case instead of tf.conds would result in significantly larger
+    # graphs and would even break export for some larger policies.
     for (i, policy) in enumerate(policies):
         image = tf.cond(
             tf.equal(i, policy_to_select),
@@ -669,22 +659,20 @@ def build_and_apply_nas_policy(policies, image, augmentation_hparams):
     Returns
     -------
     tf.Tensor
-        A version of image that now has data augmentation applied to it based
-        on the `policies` pass into the function.
+        A version of image that now has data augmentation applied to it based on the
+        `policies` pass into the function.
     """
     replace_value = [128, 128, 128]
 
-    # func is the string name of the augmentation function, prob is the
-    # probability of applying the operation and level is the parameter
-    # associated with the tf op.
+    # func is the string name of the augmentation function, prob is the probability of
+    # applying the operation and level is the parameter associated with the tf op.
 
-    # tf_policies are functions that take in an image and return an augmented
-    # image.
+    # tf_policies are functions that take in an image and return an augmented image.
     tf_policies = []
     for policy in policies:
         tf_policy = []
-        # Link string name to the correct python function and make sure the
-        # correct argument is passed into that function.
+        # Link string name to the correct python function and make sure the correct
+        # argument is passed into that function.
         for policy_info in policy:
             policy_info = list(policy_info) + [
                 replace_value,
@@ -692,8 +680,7 @@ def build_and_apply_nas_policy(policies, image, augmentation_hparams):
             ]
 
             tf_policy.append(_parse_policy_info(*policy_info))
-        # Now build the tf policy that will apply the augmentation procedue
-        # on image.
+        # Now build the tf policy that will apply the augmentation procedue on image.
 
         def make_final_policy(tf_policy_):
             def final_policy(image_):
@@ -722,12 +709,12 @@ def distort_image_with_autoaugment(image, augmentation_name):
     augmentation_name : str
         The name of the AutoAugment policy to use.
         The available options are `v0` and `test`.
-        `v0` is the policy used for all of the results in the paper and
-        was found to achieve the best results on the COCO dataset.
-        `v1`, `v2` and `v3` are additional good policies found on the COCO
-        dataset that have slight variation in what operations were used
-        during the search procedure along with how many operations are
-        applied in parallel to a single image (2 vs 3).
+        `v0` is the policy used for all of the results in the paper and was found to
+        achieve the best results on the COCO dataset.
+        `v1`, `v2` and `v3` are additional good policies found on the COCO dataset that
+        have slight variation in what operations were used during the search procedure
+        along with how many operations are applied in parallel to a single image (2 vs 3)
+        .
 
     Returns
     -------
@@ -763,13 +750,12 @@ def distort_image_with_randaugment(image, num_layers, magnitude):
     image : tf.Tensor
         Tensor of shape [height, width, 3] representing an image.
     num_layers : int
-        The number of augmentation transformations to
-        apply sequentially to an image. Represented as (N) in the paper.
-        Usually best values will be in the range [1, 3].
+        The number of augmentation transformations to apply sequentially to an image.
+        Represented as (N) in the paper. Usually best values will be in the range
+        `[1, 3]`.
     magnitude : int
         Shared magnitude across all augmentation operations.
-        Represented as (M) in the paper. Usually best values are in the range
-        [5, 30].
+        Represented as (M) in the paper. Usually best values are in the range `[5, 30]`.
 
     Returns
     -------

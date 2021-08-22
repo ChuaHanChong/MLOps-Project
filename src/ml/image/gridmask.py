@@ -9,19 +9,21 @@ import math
 
 import tensorflow as tf
 from tensorflow_addons import image as image_ops
+from typeguard import typechecked
 
 
 class GridMask:
     """GridMask class for grid masking augmentation."""
 
+    @typechecked
     def __init__(
         self,
-        prob=0.6,
-        ratio=0.6,
-        rotate=10.0,
-        gridmask_size_ratio=0.5,
-        fill=1,
-        interpolation='BILINEAR',
+        prob: float = 0.6,
+        ratio: float = 0.6,
+        rotate: float = 10.0,
+        gridmask_size_ratio: float = 0.5,
+        fill: int = 1,
+        interpolation: str = 'BILINEAR',
     ):
         """
         Init method.
@@ -29,18 +31,18 @@ class GridMask:
         Parameters
         ----------
         prob : float, optional
-            probability of occurance, by default 0.6 .
+            Probability of occurance, by default `0.6`.
         ratio : float, optional
-            grid mask ratio, by default 0.6.
-            If 0.5, grid and spacing will be equal.
+            Grid mask ratio, by default `0.6`.
+            If `0.5`, grid and spacing will be equal.
         rotate : float, optional
-            rotation of grid mesh, by default 10 .
+            Rotation of grid mesh, by default `10`.
         gridmask_size_ratio : float, optional
-            grid to image size ratio, by default 0.5 .
+            Grid to image size ratio, by default `0.5`.
         fill : int, optional
-            fill value for grids, by default 1 .
+            Fill value for grids, by default `1`.
         interpolation : str, optional
-            interpolation method for rotation, by default "BILINEAR".
+            Interpolation method for rotation, by default `'BILINEAR'`.
         """
         self.prob = prob
         self.ratio = ratio

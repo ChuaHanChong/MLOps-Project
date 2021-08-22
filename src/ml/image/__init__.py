@@ -29,16 +29,16 @@ class AugmentImage:
         Parameters
         ----------
         augname : str, optional
-            Augmentation method with name like `autoaug`, `randaug`, `ra_aa`,
-            by default `randaug`.
+            Augmentation method with name like `'autoaug'`, `'randaug'`, `'ra_aa'`,
+            by default `'randaug'`.
         ra_num_layers : int, optional
             The number of random augmentation transformations to apply
-            sequentially to an image, by default 2.
+            sequentially to an image, by default `2`.
         ra_magnitude : int, optional
             Shared magnitude across all random augmentation operations,
-            by default 15.
+            by default `15`.
         image_dtype : tf.DType, optional
-            Output image data type, by default tf.float32.
+            Output image data type, by default `tf.float32`.
         """
         self.augname = augname
         self.augparams = dict(
@@ -82,6 +82,7 @@ class AugmentImage:
 class PreprocessImage:
     """Image preprocessing."""
 
+    @typechecked
     def __init__(
         self,
         target_size: Optional[int] = None,
@@ -95,18 +96,18 @@ class PreprocessImage:
         Parameters
         ----------
         target_size : int, optional
-            Output image size, by default None.
+            Output image size, by default `None`.
         sharpness_improvement : bool, optional
             Improve sharpness of image with unsharp masking,
-            by default True.
+            by default `True`.
         contrast_improvement : bool, optional
             Improve contrast of image with histogram equalization,
-            by default True.
+            by default `True`.
         image_padding : bool, optional
             Pad the shorter side of image with zeros,
-            by default True.
+            by default `True`.
         image_dtype : tf.DType, optional
-            Output image data type, by default tf.float32.
+            Output image data type, by default `tf.float32`.
         """
         self.target_size = target_size
         self.sharpness_improvement = sharpness_improvement
@@ -129,19 +130,16 @@ class PreprocessImage:
     @staticmethod
     @tf.function
     def improve_sharpness(image):
-        """Improve sharpness of image.
-
-        The method is unsharp masking.
-        """
+        """Improve sharpness with unsharp masking."""
         blurred_image = tfa.image.gaussian_filter2d(image, (9, 9), 10)
         return tfa.image.blend(image, blurred_image, factor=-0.5)
 
     @staticmethod
     @tf.function
     def improve_contrast(image):
-        """Improve contrast of image.
+        """Improve contrast with (CLAHE).
 
-        The method is contrast limited adaptive histogram equalization (CLAHE).
+        CLAHE stands for contrast limited adaptive histogram equalization.
         """
         image = tf.image.rgb_to_hsv(image)
         h, s, v = tf.split(image, 3, axis=-1)
