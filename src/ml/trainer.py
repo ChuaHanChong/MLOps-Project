@@ -53,7 +53,7 @@ class TrainWorker:
         self,
         fn_args: tfx.components.FnArgs,
         name: Optional[str] = None,
-    ) -> None:
+    ):
         """Initialize.
 
         Parameters
