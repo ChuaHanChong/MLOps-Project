@@ -217,13 +217,9 @@ class TrainWorker:
     def _setup_optimizer(self, steps_per_epoch, lr=None):
         """Configure default learning rate schedule and optimizer."""
         batch_size = self.fn_args.custom_config['batch_size']
-        batch_size_per_replica = (
-            batch_size // self.ds_strategy.num_replicas_in_sync
-        )
+        batch_size_per_replica = batch_size // self.ds_strategy.num_replicas_in_sync
 
-        scaled_lr = (lr or LEARNING_RATE['LR_BASE']) * (
-            batch_size_per_replica / 256.0
-        )
+        scaled_lr = (lr or LEARNING_RATE['LR_BASE']) * (batch_size_per_replica / 256.0)
         learning_rate = WarmupCosineDecayRestarts(
             scaled_lr,
             first_decay_steps=steps_per_epoch
@@ -458,9 +454,7 @@ class TrainWorker:
                 name=self.name,
             )
             if self.fn_args.custom_config.get('pretrained_path', None):
-                pretrained_weight = self.fn_args.custom_config[
-                    'pretrained_path'
-                ]
+                pretrained_weight = self.fn_args.custom_config['pretrained_path']
                 print(f'Load pretrained weight: {pretrained_weight}')
 
             loss = call_loss_object(self.fn_args.custom_config['loss'])
@@ -497,9 +491,7 @@ class TrainWorker:
                         'var_trainable_expr',
                         None,
                     )
-                    or default_trainable_expr[
-                        self.fn_args.custom_config['model_name']
-                    ],
+                    or default_trainable_expr[self.fn_args.custom_config['model_name']],
                     prune_model=True,
                     pruned_ckpt_dir=self.fn_args.custom_config.get(
                         'pruned_ckpt_dir',

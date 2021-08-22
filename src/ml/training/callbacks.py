@@ -225,8 +225,7 @@ class ReduceLROnPlateau(tf.keras.callbacks.ReduceLROnPlateau):
                     ):
                         old_lr = float(
                             K.get_value(
-                                self.model.optimizer.lr.
-                                scheduler.initial_learning_rate,
+                                self.model.optimizer.lr.scheduler.initial_learning_rate,
                             ),
                         )
                     else:
@@ -238,8 +237,9 @@ class ReduceLROnPlateau(tf.keras.callbacks.ReduceLROnPlateau):
                             self.model.optimizer.lr.__class__.__name__
                             == 'WarmupCosineDecayRestarts'
                         ):
-                            self.model.optimizer.lr.\
-                                scheduler.initial_learning_rate = new_lr
+                            self.model.optimizer.lr.scheduler.initial_learning_rate = (
+                                new_lr
+                            )
                         else:
                             K.set_value(self.model.optimizer.lr, new_lr)
                         if self.verbose > 0:

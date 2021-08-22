@@ -61,8 +61,8 @@ class GridMask:
         """Crop in middle of mask and image corners."""
         ww = hh = tf.shape(mask)[0]
         mask = mask[
-            (hh - h) // 2: (hh - h) // 2 + h,
-            (ww - w) // 2: (ww - w) // 2 + w,
+            (hh - h) // 2 : (hh - h) // 2 + h,
+            (ww - w) // 2 : (ww - w) // 2 + w,
         ]
         return mask
 
@@ -72,8 +72,7 @@ class GridMask:
         h = tf.cast(h, tf.float32)
         w = tf.cast(w, tf.float32)
         mask_w = mask_h = tf.cast(
-            tf.cast((self.gridmask_size_ratio + 1), tf.float32)
-            * tf.math.maximum(h, w),
+            tf.cast((self.gridmask_size_ratio + 1), tf.float32) * tf.math.maximum(h, w),
             tf.int32,
         )
         self.mask_w = mask_w
@@ -116,8 +115,7 @@ class GridMask:
                 end = tf.math.minimum(start + length, mask_w)
                 indices = tf.reshape(tf.range(start, end), [end - start, 1])
                 updates = (
-                    tf.ones(shape=[end - start, mask_w], dtype=tf.int32)
-                    * self.fill
+                    tf.ones(shape=[end - start, mask_w], dtype=tf.int32) * self.fill
                 )
                 mask = tf.tensor_scatter_nd_update(mask, indices, updates)
             mask = tf.transpose(mask)
@@ -133,9 +131,7 @@ class GridMask:
         mask = self.crop(grid, h, w)
         mask = tf.cast(mask, image.dtype)
         mask = tf.reshape(mask, (h, w))
-        mask = (
-            tf.expand_dims(mask, -1) if image._rank() != mask._rank() else mask
-        )
+        mask = tf.expand_dims(mask, -1) if image._rank() != mask._rank() else mask
         occur = tf.random.normal([], 0, 1) < self.prob
         image = tf.cond(occur, lambda: image * mask, lambda: image)
         return image

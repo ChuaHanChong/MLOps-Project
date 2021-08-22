@@ -573,9 +573,7 @@ def level_to_arg(hparams):
         'Sharpness': _enhance_level_to_arg,
         'ShearX': _shear_level_to_arg,
         'ShearY': _shear_level_to_arg,
-        'Cutout': lambda level: (
-            int((level / _MAX_LEVEL) * hparams['cutout_const']),
-        ),
+        'Cutout': lambda level: (int((level / _MAX_LEVEL) * hparams['cutout_const']),),
         'TranslateX': lambda level: _translate_level_to_arg(
             level,
             hparams['translate_const'],
@@ -824,8 +822,10 @@ def distort_image_with_randaugment(image, num_layers, magnitude):
                 )
                 image = tf.cond(
                     tf.equal(i, op_to_select),
-                    lambda selected_func=func, selected_args=args:
-                    selected_func(image, *selected_args),
+                    lambda selected_func=func, selected_args=args: selected_func(
+                        image,
+                        *selected_args,
+                    ),
                     lambda: image,
                 )
     return image

@@ -40,12 +40,8 @@ def main(args):
     num_data = {'train': 128, 'test': 128}
     train_config = config['train']
     train_config['name'] = config['name']
-    train_config['steps_per_epoch'] = (
-        num_data['train'] // train_config['batch_size']
-    )
-    train_config['validation_steps'] = (
-        num_data['test'] // train_config['batch_size']
-    )
+    train_config['steps_per_epoch'] = num_data['train'] // train_config['batch_size']
+    train_config['validation_steps'] = num_data['test'] // train_config['batch_size']
 
     tfx.orchestration.LocalDagRunner().run(
         create_pipeline(
