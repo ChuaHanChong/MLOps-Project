@@ -12,11 +12,11 @@ train:
     - name: SparseTopKCategoricalAccuracy
       kwargs:
         k: 1
-        name: sparse_top_1_categorical_accuracy
+        name: top_1_accuracy
     - name: SparseTopKCategoricalAccuracy
       kwargs:
         k: 5
-        name: sparse_top_5_categorical_accuracy
+        name: top_5_accuracy
   learning_rate:
     base_lr: 0.016 # base learning rate, by default is 0.016
     use_lr_scheduler: true # cosine decay lr schedule with restarts and warmup, by default is true
