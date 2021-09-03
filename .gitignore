@@ -140,3 +140,9 @@ dmypy.json
 
 # data
 data/
+
+# tfx artifacts
+tfx/
+
+# models
+models/
