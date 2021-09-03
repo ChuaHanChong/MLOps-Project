@@ -22,27 +22,25 @@ from ml.training.utils import call_metric_object
 from ml.utils import IMAGE_KEY
 from ml.utils import LABEL_KEY
 from ml.utils import transformed_name
-from tensorflow.python.framework.convert_to_constants import (
-    convert_variables_to_constants_v2,
-)
 from tensorflow.python.keras.utils.layer_utils import count_params
-from tfx import v1 as tfx
 from tfx_bsl.public import tfxio
+
+from tfx import v1 as tfx
 
 
 # default setting
-LEARNING_RATE = {
-    'LR_BASE': 0.016,  # base learning rate
-    'USE_LR_SCHEDULER': True,  # use cosine decay lr with restarts & warmup
-    'LR_WARMUP_EPOCH': 5,  # number of learning rate warmup epoch
-    'EPOCHS_PER_RESTART': 25,  # number of epoch to restart cosine scheduler
+DEFAULT_LR_CONFIG = {
+    'lr_base': 0.016,  # base learning rate
+    'use_lr_scheduler': True,  # use cosine decay lr with restarts & warmup
+    'lr_warmup_epoch': 5,  # number of learning rate warmup epoch
+    'epochs_per_restart': 25,  # number of epoch to restart cosine scheduler
 }
-MONITOR = {
-    'METRIC': 'val_loss',  # monitoring metric for keras callbacks
-    'MODE': 'min',  # monitoring mode for keras callbacks
-    'BASELINE': None,  # baseline value for the monitored metric
-    'TARGET': None,  # target value for the monitored metric
-    'MIN_DELTA': 0.0001,  # minimum improvement for monitoring metric
+DEFAULT_MONITOR_CONFIG = {
+    'metric': 'val_loss',  # monitoring metric for keras callbacks
+    'mode': 'min',  # monitoring mode for keras callbacks
+    'baseline': None,  # baseline value for the monitored metric
+    'target': None,  # target value for the monitored metric
+    'min_delta': 0.0001,  # minimum improvement for monitoring metric
 }
 
 
@@ -88,7 +86,7 @@ class TrainWorker:
         data_accessor: tfx.components.DataAccessor,
         tf_transform_output: tft.TFTransformOutput,
         is_train: bool = False,
-        batch_size: int = 200,
+        batch_size: int = 256,
     ):
         """Generate features and label for tuning/training."""
         dataset = data_accessor.tf_dataset_factory(
@@ -122,7 +120,7 @@ class TrainWorker:
 
     def _setup_callbacks(
         self,
-        output_dir,
+        run_dir,
         steps_per_epoch,
         prune_model=False,
         verbose=1,
@@ -133,46 +131,52 @@ class TrainWorker:
             pruning_callbacks = [
                 tfmot.sparsity.keras.UpdatePruningStep(),
                 tfmot.sparsity.keras.PruningSummaries(
-                    log_dir=str(output_dir.joinpath('logs')),
+                    log_dir=str(run_dir.joinpath('logs')),
                 ),
             ]
             callbacks = [lr_logger, *pruning_callbacks]
         else:
             tb_callback = tf.keras.callbacks.TensorBoard(
-                log_dir=str(output_dir.joinpath('logs')),
+                log_dir=str(run_dir.joinpath('logs')),
             )
             callbacks = [lr_logger, tb_callback]
 
         avg_ckpt_callback = AverageModelCheckpoint(
-            filepath=str(output_dir.joinpath('checkpoint', 'emackpt-{epoch:d}')),
+            filepath=str(run_dir.joinpath('checkpoint', 'emackpt-{epoch:d}')),
             monitor=self.fn_args.custom_config['monitor'].get(
                 'metric',
-                MONITOR['METRIC'],
+                DEFAULT_MONITOR_CONFIG['metric'],
             ),
             verbose=verbose,
             save_best_only=True,
             save_weights_only=True,
             update_weights=True,
-            mode=self.fn_args.custom_config['monitor'].get('mode', MONITOR['MODE']),
+            mode=self.fn_args.custom_config['monitor'].get(
+                'mode',
+                DEFAULT_MONITOR_CONFIG['mode'],
+            ),
         )
         es_callback = EarlyStopping(
             monitor=self.fn_args.custom_config['monitor'].get(
                 'metric',
-                MONITOR['METRIC'],
+                DEFAULT_MONITOR_CONFIG['metric'],
             ),
             min_delta=self.fn_args.custom_config['monitor'].get(
                 'min_delta',
-                MONITOR['MIN_DELTA'],
+                DEFAULT_MONITOR_CONFIG['min_delta'],
             ),
             patience=self.fn_args.custom_config['learning_rate'].get(
                 'epochs_per_restart',
-                LEARNING_RATE['EPOCHS_PER_RESTART'],
+                DEFAULT_LR_CONFIG['epochs_per_restart'],
             ),
             verbose=verbose,
-            mode=self.fn_args.custom_config['monitor'].get('mode', MONITOR['MODE']),
+            mode=self.fn_args.custom_config['monitor'].get(
+                'mode',
+                DEFAULT_MONITOR_CONFIG['mode'],
+            ),
             target=self.fn_args.custom_config['monitor'].get(
                 'target',
-                MONITOR['TARGET'],
+                DEFAULT_MONITOR_CONFIG['target'],
             ),
             restore_best_weights=True,
         )
@@ -180,21 +184,24 @@ class TrainWorker:
         rlrop_callback = ReduceLROnPlateau(
             monitor=self.fn_args.custom_config['monitor'].get(
                 'metric',
-                MONITOR['METRIC'],
+                DEFAULT_MONITOR_CONFIG['metric'],
             ),
             factor=rlrop_factor,
             patience=int(
                 self.fn_args.custom_config['learning_rate'].get(
                     'epochs_per_restart',
-                    LEARNING_RATE['EPOCHS_PER_RESTART'],
+                    DEFAULT_LR_CONFIG['epochs_per_restart'],
                 )
                 * rlrop_factor,
             ),
             verbose=verbose,
-            mode=self.fn_args.custom_config['monitor'].get('mode', MONITOR['MODE']),
+            mode=self.fn_args.custom_config['monitor'].get(
+                'mode',
+                DEFAULT_MONITOR_CONFIG['mode'],
+            ),
             min_delta=self.fn_args.custom_config['monitor'].get(
                 'min_delta',
-                MONITOR['MIN_DELTA'],
+                DEFAULT_MONITOR_CONFIG['min_delta'],
             ),
             steps_per_epoch=steps_per_epoch,
         )
@@ -207,22 +214,30 @@ class TrainWorker:
         batch_size = self.fn_args.custom_config['batch_size']
         batch_size_per_replica = batch_size // self.ds_strategy.num_replicas_in_sync
 
-        scaled_lr = (lr or LEARNING_RATE['LR_BASE']) * (batch_size_per_replica / 256.0)
-        learning_rate = WarmupCosineDecayRestarts(
-            scaled_lr,
-            first_decay_steps=steps_per_epoch
-            * self.fn_args.custom_config['learning_rate'].get(
-                'epochs_per_restart',
-                LEARNING_RATE['EPOCHS_PER_RESTART'],
-            ),
-            t_mul=1.0,
-            m_mul=1.0,
-            steps_per_epoch=steps_per_epoch,
-            warmup_epochs=self.fn_args.custom_config['learning_rate'].get(
-                'lr_warmup_epoch',
-                LEARNING_RATE['LR_WARMUP_EPOCH'],
-            ),
+        scaled_lr = (lr or DEFAULT_LR_CONFIG['lr_base']) * (
+            batch_size_per_replica / 256.0
         )
+        if self.fn_args.custom_config['learning_rate'].get(
+            'use_lr_scheduler',
+            DEFAULT_LR_CONFIG['use_lr_scheduler'],
+        ):
+            learning_rate = WarmupCosineDecayRestarts(
+                scaled_lr,
+                first_decay_steps=steps_per_epoch
+                * self.fn_args.custom_config['learning_rate'].get(
+                    'epochs_per_restart',
+                    DEFAULT_LR_CONFIG['epochs_per_restart'],
+                ),
+                t_mul=1.0,
+                m_mul=1.0,
+                steps_per_epoch=steps_per_epoch,
+                warmup_epochs=self.fn_args.custom_config['learning_rate'].get(
+                    'lr_warmup_epoch',
+                    DEFAULT_LR_CONFIG['lr_warmup_epoch'],
+                ),
+            )
+        else:
+            learning_rate = scaled_lr
 
         optimizer = tf.keras.optimizers.SGD(
             learning_rate=learning_rate,
@@ -293,52 +308,17 @@ class TrainWorker:
     def _save_model(
         self,
         model,
-        output_dir,
-        save_frozen_graph=True,
+        model_dir,
         prune_model=False,
     ):
-        """Save model in TF SavedModel and frozen graph format."""
+        """Save model in TF SavedModel format."""
         # TF SavedModel format
         if prune_model:
             model_for_export = tfmot.sparsity.keras.strip_pruning(model)
         else:
             model_for_export = model
 
-        saved_model_path = str(output_dir / 'saved_model')
-        model_for_export.save(saved_model_path)
-
-        if save_frozen_graph:
-            # TF frozen graph format
-            frozen_out_path = str(output_dir / 'frozen_graph')
-            frozen_graph_filename = 'frozen_graph'
-
-            # Convert Keras model to ConcreteFunction
-            full_model = tf.function(lambda x: model_for_export(x))
-            full_model = full_model.get_concrete_function(
-                tf.TensorSpec(
-                    model_for_export.inputs[0].shape,
-                    model_for_export.inputs[0].dtype,
-                ),
-            )
-
-            # Get frozen ConcreteFunction
-            frozen_func = convert_variables_to_constants_v2(full_model)
-            frozen_func.graph.as_graph_def()
-
-            # Save frozen graph to disk
-            tf.io.write_graph(
-                graph_or_graph_def=frozen_func.graph,
-                logdir=frozen_out_path,
-                name=f'{frozen_graph_filename}.pb',
-                as_text=False,
-            )
-            # Save its text representation
-            tf.io.write_graph(
-                graph_or_graph_def=frozen_func.graph,
-                logdir=frozen_out_path,
-                name=f'{frozen_graph_filename}.pbtxt',
-                as_text=True,
-            )
+        model_for_export.save(model_dir, include_optimizer=False, save_format='tf')
 
     def _fit(
         self,
@@ -347,13 +327,11 @@ class TrainWorker:
         metrics,
         train_dataset,
         val_dataset,
-        output_dir,
+        run_dir,
         var_trainable_expr=None,
         ckpt_dir=None,
         prune_model=False,
         pruned_ckpt_dir=None,
-        save_model=True,
-        save_frozen_graph=True,
     ):
         """Train model."""
         num_epochs = self.fn_args.custom_config['num_epochs']
@@ -372,7 +350,7 @@ class TrainWorker:
             pruned_ckpt_dir=pruned_ckpt_dir,
         )
         callbacks = self._setup_callbacks(
-            output_dir,
+            run_dir,
             steps_per_epoch,
             prune_model=prune_model,
         )
@@ -384,16 +362,8 @@ class TrainWorker:
             validation_data=val_dataset,
             validation_steps=validation_steps,
         )
-        best_ckpt_path = tf.train.latest_checkpoint(str(output_dir / 'checkpoint'))
+        best_ckpt_path = tf.train.latest_checkpoint(str(run_dir / 'checkpoint'))
         model.load_weights(best_ckpt_path)
-
-        if save_model:
-            self._save_model(
-                model,
-                output_dir,
-                save_frozen_graph=save_frozen_graph,
-                prune_model=prune_model,
-            )
 
         return model
 
@@ -451,9 +421,8 @@ class TrainWorker:
                     metrics,
                     train_dataset,
                     val_dataset,
-                    Path(self.fn_args.model_run_dir).joinpath('transferred'),
+                    Path(self.fn_args.model_run_dir) / 'transferred',
                     ckpt_dir=self.fn_args.custom_config.get('ckpt_dir', None),
-                    save_model=save_model,
                 )
 
             if self.fn_args.custom_config['fine_tuning']:
@@ -465,7 +434,7 @@ class TrainWorker:
                     metrics,
                     train_dataset,
                     val_dataset,
-                    Path(self.fn_args.model_run_dir).joinpath('finetuned'),
+                    Path(self.fn_args.model_run_dir) / 'finetuned',
                     var_trainable_expr=self.fn_args.custom_config.get(
                         'var_trainable_expr',
                         None,
@@ -476,7 +445,13 @@ class TrainWorker:
                         'pruned_ckpt_dir',
                         None,
                     ),
-                    save_model=save_model,
+                )
+
+            if save_model:
+                self._save_model(
+                    model,
+                    self.fn_args.serving_model_dir,
+                    prune_model=self.fn_args.custom_config['fine_tuning'],
                 )
 
 
@@ -491,10 +466,10 @@ def run_fn(fn_args: tfx.components.FnArgs):
         Holds args used to train the model as name/value pairs.
     """
     # set default setting for learning rate and metric monitoring
-    if fn_args.custom_config.get('learning_rate', None):
-        fn_args.custom_config['learning_rate'] = LEARNING_RATE
-    if fn_args.custom_config.get('monitor', None):
-        fn_args.custom_config['monitor'] = MONITOR
+    if not fn_args.custom_config.get('learning_rate', None):
+        fn_args.custom_config['learning_rate'] = DEFAULT_LR_CONFIG
+    if not fn_args.custom_config.get('monitor', None):
+        fn_args.custom_config['monitor'] = DEFAULT_MONITOR_CONFIG
 
     worker = TrainWorker(
         fn_args,

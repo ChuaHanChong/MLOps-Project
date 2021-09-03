@@ -61,7 +61,8 @@ def build_model(
     output_activation: Optional[str] = None,
     name: Optional[str] = None,
 ):
-    """Build model with TF keras applications.
+    """
+    Build model with TF keras applications.
 
     Parameters
     ----------
