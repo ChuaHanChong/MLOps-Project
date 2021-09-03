@@ -17,9 +17,11 @@ seaborn
 scikit-learn
 
 # Linting & formatting
+flake8
+black
 pycodestyle
 pydocstyle
-black
+pre-commit
 
 # Test
 pytest

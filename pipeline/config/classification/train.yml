@@ -1,0 +1,27 @@
+name: cifar10
+train:
+  model_name: efficientnet-b0
+  num_classes: 10
+  transfer_learning: true
+  fine_tuning: true
+  loss:
+    name: SparseCategoricalCrossentropy
+    kwargs:
+      from_logits: true
+  metrics:
+    - name: SparseTopKCategoricalAccuracy
+      kwargs:
+        k: 1
+        name: top_1_accuracy
+    - name: SparseTopKCategoricalAccuracy
+      kwargs:
+        k: 5
+        name: top_5_accuracy
+  learning_rate:
+    base_lr: 0.016 # base learning rate, by default is 0.016
+    use_lr_scheduler: true # cosine decay lr schedule with restarts and warmup, by default is true
+  monitor:
+    metric: val_loss # monitoring metric for keras callbacks, by default is val_accuracy
+    mode: min # monitoring mode for keras callbacks, by default is max
+  batch_size: 32
+  num_epochs: 50

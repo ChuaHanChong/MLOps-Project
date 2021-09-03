@@ -1,6 +1,8 @@
 # TensorFlow & its extensions
-tensorflow==2.5.0
+tensorflow==2.5.1
+tensorboard_plugin_profile
 tensorflow-addons==0.13.0
 tensorflow-model-optimization==0.6.0
 tensorflow-hub==0.12.0
-tfx==1.0.0
+tfx==1.2.0
+tf_clahe==0.1.0
