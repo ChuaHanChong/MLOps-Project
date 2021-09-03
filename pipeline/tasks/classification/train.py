@@ -1,11 +1,13 @@
 """Train a classification model."""
+# import os
+# os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"  # suppress info-level logs
 import argparse
 from pathlib import Path
 
 import yaml
-from icecream import ic
 from ml.model import input_shapes
 from ml.pipeline import create_pipeline
+
 from tfx import v1 as tfx
 
 
@@ -13,16 +15,18 @@ def main(args):
     """Execute main function."""
     with open(args.config) as stream:
         config = yaml.safe_load(stream)
-        ic(config)
 
     pipeline_name = config['name']
+    root = Path.cwd()
 
-    root = Path.cwd().joinpath('data')
-    data_root = root.joinpath('raw', pipeline_name)
+    data_root = root.joinpath('data')
+    tfrecords_root = data_root.joinpath('tfrecords', pipeline_name)
 
-    tfx_root = Path.cwd().joinpath('data', 'tfx')
+    tfx_root = root.joinpath('tfx')
     pipeline_root = tfx_root.joinpath('pipelines', pipeline_name)
     metadata_path = tfx_root.joinpath('metadata', pipeline_name, 'metadata.db')
+
+    serving_model_dir = root.joinpath('models')
 
     # Pipeline arguments for Beam powered Components.
     # beam_pipeline_args = [
@@ -47,8 +51,9 @@ def main(args):
         create_pipeline(
             pipeline_name=pipeline_name,
             pipeline_root=str(pipeline_root),
-            data_root=str(data_root),
+            tfrecords_root=str(tfrecords_root),
             metadata_path=str(metadata_path),
+            serving_model_dir=str(serving_model_dir),
             preprocessing_fn_custom_config=preprocess_config,
             run_fn_custom_config=train_config,
             beam_pipeline_args=beam_pipeline_args,
